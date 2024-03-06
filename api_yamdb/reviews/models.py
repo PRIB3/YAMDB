@@ -19,7 +19,8 @@ class Profile(AbstractUser):
         max_length=150,
         unique=True,
         help_text=_(
-            "Обязательное поле. 150 символов или меньше. Допустимы буквы, цифры и символы @/./+/-/_."
+            ("Обязательное поле. 150 символов или меньше. "
+             "Допустимы буквы, цифры и символы @/./+/-/_.")
         ),
         validators=[username_validator],
         error_messages={
@@ -35,8 +36,12 @@ class Profile(AbstractUser):
     bio = models.TextField(null=True, blank=True)
     email = models.EmailField(_("email address"), max_length=254)
 
+    def __str__(self) -> str:
+        """Выводит username."""
+        return self.username
 
-User = get_user_model()
+
+User = get_user_model()  # переопределяем модель юзера на пользовательскую
 
 
 class Genre(models.Model):
@@ -44,8 +49,12 @@ class Genre(models.Model):
     Модель для жанров.
     """
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=50)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def __str__(self) -> str:
+        """Выводит slug."""
+        return self.slug
 
 
 class Category(models.Model):
@@ -53,8 +62,12 @@ class Category(models.Model):
     Модель для категорий.
     """
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=50)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def __str__(self) -> str:
+        """Выводит slug."""
+        return self.slug
 
 
 class Title(models.Model):
@@ -74,6 +87,14 @@ class Title(models.Model):
         related_name="titles",
     )
 
+    def __str__(self) -> str:
+        """Выводит name."""
+        return self.name
+
+    class Meta:
+        """Сортирует queryset по умолчанию по id."""
+        ordering = ('id',)
+
 
 class Review(models.Model):
     """
@@ -84,8 +105,15 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name="reviews"
     )
     text = models.TextField()
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviews"
+    )
     score = models.IntegerField(choices=SCORES)
     pub_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Сортирует queryset по умолчанию по id."""
+        ordering = ('id',)
 
 
 class Comment(models.Model):
@@ -101,3 +129,7 @@ class Comment(models.Model):
         Review, on_delete=models.CASCADE, related_name="comments"
     )
     pub_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Сортирует queryset по умолчанию по id."""
+        ordering = ('id',)
